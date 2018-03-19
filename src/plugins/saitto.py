@@ -2,8 +2,13 @@
 # -*- coding: Utf8 -*-
 
 import event
+import time
 import cgi
 import boto3
+from random import randint
+
+
+
 class Plugin:
 
 
@@ -50,15 +55,16 @@ class Plugin:
                     },
                     inputText=input
                 )
+            if response['dialogState'] == 'Fulfilled':
+                message = self.sanitize(response['message'])
+            elif response['dialogState'] == 'ElicitIntent':
+                message = 'Non ho ben capito eh'
+            else:
+                message = 'patate'
+            print message
         except:
             message ="senti non ho tempo per queste cose dai"
-        if response['dialogState'] == 'Fulfilled':
-            message =self.sanitize(response['message'])
-        elif response['dialogState'] == 'ElicitIntent':
-            message = 'Non ho ben capito eh'
-        else:
-            message ='patate'
-        print message
+        self.delay_letters(message)
         self.client.priv_msg(target, message)
     
     def help(self, target):
@@ -82,3 +88,12 @@ class Plugin:
         message=msg.encode('utf-8').strip()
         message = cgi.escape(msg)
         return message
+
+    def delay_letters(self,msg):
+        nwords =float(len(msg.split()))
+        if nwords>0:
+            wps=0.73
+            sectowait=(nwords/wps)+randint(0, 2)
+        else:
+            sectowait=randint(0, 9)
+        time.sleep(sectowait)
