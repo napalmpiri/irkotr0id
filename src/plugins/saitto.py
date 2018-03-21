@@ -5,6 +5,7 @@ import event
 import time
 import cgi
 import boto3
+import random
 from random import randint
 
 
@@ -16,32 +17,43 @@ class Plugin:
         self.client = client
         try:
             botclient = boto3.client('lex-runtime')
-        except:
-            pass
-        self.botclient=botclient
+        except Exception as ex:
+            messageex='Exception during initialization %s %s' %(type(ex), ex.args)
+            self.client.logger.error(messageex)
+        if botclient is not None:
+            self.botclient=botclient
+            self.client.logger.debug('>> DEBUG: Initialized')
 
     @event.privmsg()
     def get_notice(self, e):
-        target = e.values['target']
-        msg = e.values['msg'][1:]
-        baremsg=self.sanitize(self.strip_nick(msg, self.client.nick_name))
-        nick = e.values['nick']
+        target = self.sanitize(e.values['target'])
+        msg = self.sanitize(e.values['msg'][1:])
+        baremsg=self.strip_nick(e.values['msg'][1:], self.client.nick_name)
+        nick = self.sanitize(e.values['nick'])
 
         if nick == self.client.nick_name:
             # don't talk to self
+            self.client.logger.debug('will not talk to myself')
             return
             # channel chat, not speaking with me,
         if nick != self.client.nick_name and target != self.client.nick_name and self.client.nick_name not in msg:
+            self.client.logger.debug('they are not talking to me I will not answer')
             return
 
         #channel chat, speking with me, answer in channel
         if nick != self.client.nick_name and target!=self.client.nick_name and self.client.nick_name in msg:
+            self.client.logger.debug('they are  talking to me in channell, in channel  I will answer')
             self.get_respose_bot(baremsg, target)
         #private chat, answer in private
         if nick != self.client.nick_name and target==self.client.nick_name:
+            self.client.logger.debug('they are  talking to me in private, in private  I will answer')
             self.get_respose_bot(baremsg, target)
 
     def get_respose_bot(self,input,target):
+        if  self.botclient is None:
+            message='ZZZzzzzz'
+            self.client.priv_msg(target, message)
+            return
         try:
             response = self.botclient.post_text(
                     botName='sgrulliver',
@@ -58,42 +70,58 @@ class Plugin:
             if response['dialogState'] == 'Fulfilled':
                 message = self.sanitize(response['message'])
             elif response['dialogState'] == 'ElicitIntent':
-                message = 'Non ho ben capito eh'
+                message = 'wot'
             else:
-                message = 'patate'
-            print message
-        except:
-            message ="senti non ho tempo per queste cose dai"
-        self.delay_letters(message)
-        self.client.priv_msg(target, message)
+                message = 'wuzzap?!'
+            self.client.logger.info('>> INFO Sending: ' + message)
+        except Exception as ex:
+            message = 'no time for this, srsly'
+            messageex= 'Exception %s %s' % (type(ex), ex.args)
+            self.client.logger.error(messageex)
+        self.delay_letters(target, message)
+        #self.client.priv_msg(target, message)
     
     def help(self, target):
-        message = "Sono away"
+        message = 'Away, BBL'
+        self.client.logger.info('>> INFO' + message)
         self.client.priv_msg(target, message)
 
-    def strip_nick(self, msg, nick):
+    def strip_nick(self, msg, snick):
+        message = self.sanitize(msg)
+        nick= self.sanitize(snick)
         nicktwodot=nick+":"
         nicktwospacedot = nick + " :"
-        if nicktwodot in msg:
-            message = msg.replace(nicktwodot,"",1)
-        elif nicktwospacedot in msg:
-            message = msg.replace(nicktwospacedot, "", 1)
-        elif nick in msg:
-            message = msg.replace(nick, "", 1)
-        else:
-            message=msg
+        if nicktwodot in message:
+            message = message.replace(nicktwodot,"",1)
+        elif nicktwospacedot in message:
+            message = message.replace(nicktwospacedot, "", 1)
+        elif nick in message:
+            message = message.replace(nick, "", 1)
         return message
 
     def sanitize(self, msg):
-        message=msg.encode('utf-8').strip()
-        message = cgi.escape(msg)
+        message ='uh-uh'
+        try:
+            message=msg.decode('utf-8','ignore').strip()
+            message = cgi.escape(message)
+        except Exception as ex:
+            messageex='Exception %s %s' %(type(ex), ex.args)
+            self.client.logger.error(messageex)
         return message
 
-    def delay_letters(self,msg):
+    def delay_letters(self,target, msg):
         nwords =float(len(msg.split()))
+        longerwait=bool(random.getrandbits(1))
+        baselinewaitsecs=0
+        if longerwait:
+            baselinewaitsecs=randint(10, 60);
         if nwords>0:
             wps=0.73
-            sectowait=(nwords/wps)+randint(0, 2)
+            secondstowait=(nwords/wps)+randint(0, 6)
         else:
-            sectowait=randint(0, 9)
-        time.sleep(sectowait)
+            secondstowait=randint(0, 9)
+        secondstowait=baselinewaitsecs+secondstowait
+        self.client.logger.info('Waiting for %d seconds before sending \'%s\' to %s' %(secondstowait,msg,target))
+        time.sleep(secondstowait)
+        self.client.priv_msg(target, msg)
+        self.client.logger.debug('just send \'%s\' to %s after %d seconds' %(msg,target, secondstowait))
