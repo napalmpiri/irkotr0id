@@ -49,16 +49,27 @@ class Plugin:
             self.client.logger.debug('they are  talking to me in private, in private  I will answer')
             self.get_respose_bot(baremsg, target)
 
+
+    def targetstrip(self, target):
+        trg=target.replace("#", "")
+        return trg
     def get_respose_bot(self,input,target):
         if  self.botclient is None:
             message='ZZZzzzzz'
             self.client.priv_msg(target, message)
             return
+        botname=self.client.config['saitto']['BOTNAME'][0] #.encode('utf-8','ignore')
+        botalias=self.client.config['saitto']['BOTALIAS'][0]#.encode('utf-8','ignore')
+        trg=self.targetstrip(target) #.encode('utf-8','ignore')
+        if not botname or not botalias:
+            message = 'ZZZzzzzzZZZZ'
+            self.client.priv_msg(target, message)
+            return
         try:
             response = self.botclient.post_text(
-                    botName='sgrulliver',
-                    botAlias='sgrulliverfirst',
-                    userId='fiacco',
+                    botName=botname,
+                    botAlias=botalias,
+                    userId=trg,
                     sessionAttributes={
                         'string': 'string'
                     },

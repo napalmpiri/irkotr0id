@@ -1,11 +1,11 @@
 {
 	"user":
 	{
-		"USERNAME"	:	"sgrulliver",
-		"HOSTNAME"	:	"bollate",
-		"SERVERNAME":	"antanico",
-		"REALNAME"	:	"sgrulliver",
-		"NICKNAME"	:	"sgrulliver"
+		"USERNAME"	:	"watwat",
+		"HOSTNAME"	:	"wat",
+		"SERVERNAME":	"wat",
+		"REALNAME"	:	"wat",
+		"NICKNAME"	:	"wat"
 	},
 	"core_plugins": ["pong","update_channel", "server_connection", "help"],
 	"plugins": ["rootme", "notice", "plus_one", "weather", "markov", "url_checker","saitto"],
@@ -16,7 +16,12 @@
 	},
 	"channels":
 	{
-		"JOINCHAN"	:	["##kazzell2"],
+		"JOINCHAN"	:	["##channell"],
 		"JOINCHAN_SLEEP":	1
+	},
+	"saitto":
+	{
+		"BOTNAME"	:	["botname"],
+		"BOTALIAS":	["botversion"]
 	}
 }
