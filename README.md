@@ -143,7 +143,7 @@ event.nick    :   old_nick, new_nick, host
 ```
 
 # Client
-The client, defined in ```src/client.py```, represents the core logic of the irkotr0id. It handles the connection to the remote server, join channels, load plugins, update event-action mapping, etc.
+The client, defined in ```src/client.py```, represents the core logic of irkotr0id. It handles the connection to the remote server, joins channels, loads plugins, updates event-action mapping, etc.
 
 The client provides some useful methods and structures that you will probably use during your plugin development:
 
@@ -155,7 +155,7 @@ Keys are channel names, and values are instances of channel class.
 - client.quit()
 A method for terminating the connection to the server.
 
-- client.privmsg(target, message)
+- client.priv_msg(target, message)
 Send a private message to target, which is either a channel or a nickname
 ```
 
